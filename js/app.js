@@ -121,150 +121,163 @@ const App = (() => {
   }
 
   function initHeroCanvas() {
-    const canvas = document.getElementById('hero-acoustic-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const radarCanvas = document.getElementById('home-radar-monitor');
+    if (!radarCanvas) return;
+    const rctx = radarCanvas.getContext('2d');
 
     let t = 0;
-    const particles = [];
-    for (let i = 0; i < 45; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() * 2 + 1,
-        speed: Math.random() * 0.4 + 0.2,
-        phase: Math.random() * Math.PI * 2
-      });
-    }
+    const targets = [
+      { angle: 0.82, dist: 0.65, id: 'TGT-1: 4,850m', type: 'Submersible' },
+      { angle: 2.65, dist: 0.38, id: 'TGT-2: 2,720m', type: 'Seamount' },
+      { angle: 4.88, dist: 0.82, id: 'TGT-3: 6,100m', type: 'Biologic' }
+    ];
 
-    function renderCanvas() {
-      const w = canvas.width;
-      const h = canvas.height;
-      ctx.clearRect(0, 0, w, h);
+    function renderRadar() {
+      const rw = radarCanvas.width;
+      const rh = radarCanvas.height;
 
-      // Acoustic Undulating Wave Grid (Thermocline & Sound Rays)
-      const numLines = 5;
-      for (let l = 0; l < numLines; l++) {
-        ctx.beginPath();
-        const baseOffset = (h / (numLines + 1)) * (l + 1);
-        const freq = 0.004 + l * 0.001;
-        const amp = 15 + l * 6;
-        const colorAlpha = 0.12 + (l / numLines) * 0.15;
+      // Dark background with slight phosphor trail effect
+      rctx.fillStyle = '#060a14';
+      rctx.fillRect(0, 0, rw, rh);
 
-        for (let x = 0; x <= w; x += 10) {
-          const y = baseOffset + Math.sin(x * freq + t * 0.03 + l) * amp + Math.cos(x * 0.002 - t * 0.02) * 8;
-          if (x === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
+      const cx = rw / 2;
+      const cy = rh / 2 - 12;
+      const maxR = Math.min(cx, cy) - 14;
 
-        ctx.strokeStyle = `rgba(0, 229, 255, ${colorAlpha})`;
-        ctx.lineWidth = l === 2 ? 2 : 1.2;
-        ctx.stroke();
+      // Subtle background grid
+      rctx.strokeStyle = 'rgba(0, 229, 255, 0.05)';
+      rctx.lineWidth = 1;
+      for (let x = 0; x < rw; x += 20) {
+        rctx.beginPath(); rctx.moveTo(x, 0); rctx.lineTo(x, rh); rctx.stroke();
+      }
+      for (let y = 0; y < rh; y += 20) {
+        rctx.beginPath(); rctx.moveTo(0, y); rctx.lineTo(rw, y); rctx.stroke();
       }
 
-      // Floating acoustic particles
-      particles.forEach(p => {
-        p.x += p.speed;
-        if (p.x > w) p.x = 0;
-        const yOffset = Math.sin(t * 0.04 + p.phase) * 6;
-        ctx.fillStyle = 'rgba(0, 191, 165, 0.45)';
-        ctx.beginPath();
-        ctx.arc(p.x, p.y + yOffset, p.r, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      t++;
-
-      // Animate Home Radar Monitor Canvas if present
-      const radarCanvas = document.getElementById('home-radar-monitor');
-      if (radarCanvas) {
-        const rctx = radarCanvas.getContext('2d');
-        const rw = radarCanvas.width;
-        const rh = radarCanvas.height;
-        rctx.clearRect(0, 0, rw, rh);
-
-        const cx = rw / 2;
-        const cy = rh / 2 - 15;
-        const r = Math.min(cx, cy) - 10;
-
-        // Draw concentric range rings
-        rctx.strokeStyle = 'rgba(0, 229, 255, 0.15)';
-        rctx.lineWidth = 1;
-        for (let i = 1; i <= 3; i++) {
-          rctx.beginPath();
-          rctx.arc(cx, cy, (r / 3) * i, 0, Math.PI * 2);
-          rctx.stroke();
-        }
-
-        // Crosshairs
+      // Concentric Range Rings (1000m, 2500m, 5000m)
+      const ringDistances = ['1.5 km', '3.0 km', '5.0 km'];
+      for (let i = 1; i <= 3; i++) {
+        const ringR = (maxR / 3) * i;
         rctx.beginPath();
-        rctx.moveTo(cx - r, cy); rctx.lineTo(cx + r, cy);
-        rctx.moveTo(cx, cy - r); rctx.lineTo(cx, cy + r);
+        rctx.arc(cx, cy, ringR, 0, Math.PI * 2);
+        rctx.strokeStyle = i === 3 ? 'rgba(0, 229, 255, 0.35)' : 'rgba(0, 229, 255, 0.18)';
+        rctx.lineWidth = i === 3 ? 1.5 : 1;
         rctx.stroke();
 
-        // Sweep line & Beam
-        const sweepAngle = (t * 0.035) % (Math.PI * 2);
-        rctx.save();
+        // Range ring label
+        rctx.fillStyle = 'rgba(0, 229, 255, 0.45)';
+        rctx.font = '9px JetBrains Mono, monospace';
+        rctx.fillText(ringDistances[i - 1], cx + ringR - 22, cy - 4);
+      }
+
+      // Crosshair Cardinal Axes & Degree ticks
+      rctx.strokeStyle = 'rgba(0, 229, 255, 0.2)';
+      rctx.lineWidth = 1;
+      rctx.beginPath();
+      rctx.moveTo(cx - maxR, cy); rctx.lineTo(cx + maxR, cy);
+      rctx.moveTo(cx, cy - maxR); rctx.lineTo(cx, cy + maxR);
+      rctx.stroke();
+
+      // Cardinal Labels
+      rctx.fillStyle = 'rgba(0, 229, 255, 0.7)';
+      rctx.font = 'bold 9px JetBrains Mono, monospace';
+      rctx.textAlign = 'center';
+      rctx.fillText('000° N', cx, cy - maxR - 4);
+      rctx.fillText('090° E', cx + maxR + 18, cy + 3);
+      rctx.fillText('180° S', cx, cy + maxR + 12);
+      rctx.fillText('270° W', cx - maxR - 18, cy + 3);
+      rctx.textAlign = 'left';
+
+      // 360° Rotating Sweep Line & Trailing Beam
+      const sweepAngle = (t * 0.032) % (Math.PI * 2);
+      const beamSegments = 16;
+      for (let b = 0; b < beamSegments; b++) {
+        const aStart = sweepAngle - (b / beamSegments) * 0.45;
+        const aEnd = sweepAngle - ((b + 1) / beamSegments) * 0.45;
+        const alpha = Math.max(0, (1 - b / beamSegments) * 0.22);
         rctx.beginPath();
         rctx.moveTo(cx, cy);
-        rctx.arc(cx, cy, r, sweepAngle - 0.4, sweepAngle);
+        rctx.arc(cx, cy, maxR, aStart, aEnd, true);
         rctx.closePath();
-        rctx.fillStyle = 'rgba(0, 229, 255, 0.1)';
+        rctx.fillStyle = `rgba(0, 229, 255, ${alpha})`;
+        rctx.fill();
+      }
+
+      // Main Sweep Ray
+      rctx.beginPath();
+      rctx.moveTo(cx, cy);
+      rctx.lineTo(cx + maxR * Math.cos(sweepAngle), cy + maxR * Math.sin(sweepAngle));
+      rctx.strokeStyle = '#00e5ff';
+      rctx.lineWidth = 2;
+      rctx.shadowColor = '#00e5ff';
+      rctx.shadowBlur = 8;
+      rctx.stroke();
+      rctx.shadowBlur = 0;
+
+      // Sonar Transducer Center Blip
+      rctx.fillStyle = '#00e5ff';
+      rctx.beginPath();
+      rctx.arc(cx, cy, 3, 0, Math.PI * 2);
+      rctx.fill();
+
+      // Tracked Targets with Phosphor Persistence & Pulse Rings
+      targets.forEach((tg, idx) => {
+        const tx = cx + tg.dist * maxR * Math.cos(tg.angle);
+        const ty = cy + tg.dist * maxR * Math.sin(tg.angle);
+        const angleDiff = Math.abs(((sweepAngle - tg.angle + Math.PI * 3) % (Math.PI * 2)) - Math.PI);
+        const isHit = angleDiff < 0.25;
+        const alpha = isHit ? 1.0 : Math.max(0.25, 1.0 - angleDiff / 2.2);
+
+        const color = idx === 0 ? '#ff1744' : (idx === 1 ? '#ffab00' : '#00e5ff');
+
+        // Target center dot
+        rctx.fillStyle = color;
+        rctx.beginPath();
+        rctx.arc(tx, ty, 3.5, 0, Math.PI * 2);
         rctx.fill();
 
-        rctx.beginPath();
-        rctx.moveTo(cx, cy);
-        rctx.lineTo(cx + r * Math.cos(sweepAngle), cy + r * Math.sin(sweepAngle));
-        rctx.strokeStyle = '#00e5ff';
-        rctx.lineWidth = 2;
-        rctx.stroke();
-        rctx.restore();
-
-        // Tracked Targets
-        const tgts = [
-          { a: 0.8, d: 0.65, id: 'TGT-1' },
-          { a: 2.7, d: 0.42, id: 'TGT-2' },
-          { a: 4.8, d: 0.80, id: 'TGT-3' }
-        ];
-
-        tgts.forEach(tg => {
-          const tx = cx + tg.d * r * Math.cos(tg.a);
-          const ty = cy + tg.d * r * Math.sin(tg.a);
-          const diff = Math.abs(((sweepAngle - tg.a + Math.PI * 3) % (Math.PI * 2)) - Math.PI);
-          const alpha = diff < 0.5 ? 1.0 : Math.max(0.2, 1.0 - diff / 1.5);
-
-          rctx.fillStyle = `rgba(255, 23, 68, ${alpha})`;
+        // Pulsing acquisition ring
+        if (isHit) {
+          rctx.strokeStyle = color;
+          rctx.lineWidth = 1.5;
           rctx.beginPath();
-          rctx.arc(tx, ty, 4, 0, Math.PI * 2);
-          rctx.fill();
-
-          rctx.strokeStyle = `rgba(255, 23, 68, ${alpha * 0.6})`;
-          rctx.beginPath();
-          rctx.arc(tx, ty, 7, 0, Math.PI * 2);
+          rctx.arc(tx, ty, 6 + (t % 15) * 0.8, 0, Math.PI * 2);
           rctx.stroke();
-
-          rctx.fillStyle = `rgba(224, 232, 240, ${alpha})`;
-          rctx.font = '9px JetBrains Mono, monospace';
-          rctx.fillText(tg.id, tx + 8, ty - 2);
-        });
-
-        // Live Oscillogram Line at bottom of monitor
-        rctx.strokeStyle = 'rgba(0, 200, 83, 0.75)';
-        rctx.lineWidth = 1.5;
-        rctx.beginPath();
-        const baseOy = rh - 20;
-        for (let ox = 10; ox < rw - 10; ox += 4) {
-          const oy = baseOy + Math.sin(ox * 0.08 + t * 0.15) * 8 * Math.sin(ox * 0.02);
-          if (ox === 10) rctx.moveTo(ox, oy);
-          else rctx.lineTo(ox, oy);
         }
-        rctx.stroke();
-      }
 
-      heroCanvasAnimId = requestAnimationFrame(renderCanvas);
+        // Target HUD Callout Tag
+        rctx.fillStyle = `rgba(224, 232, 240, ${alpha})`;
+        rctx.font = '8.5px JetBrains Mono, monospace';
+        rctx.fillText(tg.id, tx + 7, ty - 3);
+      });
+
+      // Bottom Live Hydrophone Receiver Oscillogram
+      const baseOy = rh - 16;
+      rctx.fillStyle = 'rgba(8, 12, 22, 0.8)';
+      rctx.fillRect(8, baseOy - 14, rw - 16, 26);
+      rctx.strokeStyle = 'rgba(0, 229, 255, 0.15)';
+      rctx.strokeRect(8, baseOy - 14, rw - 16, 26);
+
+      rctx.fillStyle = '#8899aa';
+      rctx.font = '8px JetBrains Mono, monospace';
+      rctx.fillText('CH-1 RX HYDROPHONE:', 14, baseOy - 4);
+
+      rctx.strokeStyle = '#00c853';
+      rctx.lineWidth = 1.2;
+      rctx.beginPath();
+      for (let ox = 110; ox < rw - 14; ox += 3) {
+        const sig = Math.sin(ox * 0.12 + t * 0.2) * 6 * Math.sin(ox * 0.03) + (Math.random() - 0.5) * 1.5;
+        const oy = baseOy - 1 + sig;
+        if (ox === 110) rctx.moveTo(ox, oy);
+        else rctx.lineTo(ox, oy);
+      }
+      rctx.stroke();
+
+      t++;
+      heroCanvasAnimId = requestAnimationFrame(renderRadar);
     }
 
-    renderCanvas();
+    renderRadar();
   }
 
   function getCurrentPage() {
