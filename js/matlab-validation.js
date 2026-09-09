@@ -98,6 +98,57 @@ snr_quant = 20*log10(std(ref_double)/rmse);
 fprintf('RMSE: %e\\n', rmse);
 fprintf('Quantization SNR: %.2f dB (Theoretical: %.2f dB)\\n', ...
         snr_quant, 6.02 * word_length + 1.76);
+`,
+
+    'sound_absorption_sea_francois.m': `%% Sound Absorption in Seawater — Francois & Garrison (1982) Model
+%% Reference: https://gorbatschow.github.io/SonarDocs/sound_absorption_sea_francois.en/
+
+clear; clc;
+
+% Environmental Parameters
+T = 15;                % Temperature (deg C)
+S = 35;                % Salinity (ppt / PSU)
+D = 500;               % Depth (m)
+pH = 8.0;              % Acidity / pH
+f0 = 25e3;             % Center acoustic frequency (25 kHz)
+f = f0 / 1e3;          % Frequency in kHz
+target_range = 4850;   % True target distance (m)
+
+T_kel = 273.15 + T;
+
+% Sound speed (m/s)
+c = 1412 + 3.21*T + 1.19*S + 0.0167*D;
+
+% 1. Boric acid relaxation (low frequency < 1 kHz)
+A1 = (8.86 / c) * 10^(0.78*pH - 5);
+P1 = 1;
+f1 = 2.8 * sqrt(S/35) * 10^(4 - 1245/T_kel);
+Boric = (A1 * P1 * f1 * f^2) / (f^2 + f1^2);
+
+% 2. Magnesium sulfate (MgSO4) relaxation (1 - 100 kHz)
+A2 = 21.44 * (S / c) * (1 + 0.025*T);
+P2 = 1 - (1.37e-4)*D + (6.2e-9)*(D^2);
+f2 = (8.17 * 10^(8 - 1990/T_kel)) / (1 + 0.0018*(S - 35));
+MgSO4 = (A2 * P2 * f2 * f^2) / (f^2 + f2^2);
+
+% 3. Pure water (H2O) viscous attenuation (> 100 kHz)
+if T <= 20
+    A3 = 4.937e-4 - 2.590e-5*T + 9.11e-7*T^2 - 1.5e-8*T^3;
+else
+    A3 = 3.964e-4 - 1.146e-5*T + 1.45e-7*T^2 - 6.5e-10*T^3;
+end
+P3 = 1 - (3.83e-5)*D + (4.9e-10)*(D^2);
+H2O = A3 * P3 * f^2;
+
+% Total acoustic absorption alpha (dB/km)
+alpha = Boric + MgSO4 + H2O;
+
+fprintf('=== Francois & Garrison (1982) Simulation ===\\n');
+fprintf('Sound Speed (c):         %.2f m/s\\n', c);
+fprintf('Total Absorption (alpha): %.4f dB/km\\n', alpha);
+fprintf('Boric Acid Component:     %.4f dB/km\\n', Boric);
+fprintf('MgSO4 Component:          %.4f dB/km\\n', MgSO4);
+fprintf('Pure Water Component:     %.4f dB/km\\n', H2O);
 `
   };
 

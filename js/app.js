@@ -11,6 +11,7 @@ const App = (() => {
   const ROUTES = {
     'home':               { render: Pages.renderLanding,          init: initHeroCanvas,          title: 'Home — SONARIS' },
     'uw-acoustics':       { render: Pages.renderUWAcoustics,      init: () => UWAcoustics.init(), title: 'Underwater Acoustics' },
+    'sound-absorption':   { render: Pages.renderSoundAbsorption,  init: () => SoundAbsorption.init(), title: 'Sound Absorption — Francois & Garrison' },
     'mission-control':    { render: Pages.renderMissionControl,   init: () => MissionControl.init(), title: 'Mission Control' },
     'live-sonar':         { render: Pages.renderLiveSonar,        init: () => LiveSonar.init(),    title: 'Live Sonar' },
     'simulation-lab':     { render: Pages.renderSimulationLab,    init: () => SimulationLab?.init?.(), title: 'Simulation Lab' },

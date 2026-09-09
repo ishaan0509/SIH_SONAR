@@ -873,6 +873,10 @@ const Pages = (() => {
                 <strong>fpga_fixedpoint_validation.m</strong>
                 <span>16-bit Q1.15 Fixed-Point vs Double Precision</span>
               </button>
+              <button class="sonar-btn matlab-sample-btn" data-script="sound_absorption_sea_francois.m">
+                <strong>sound_absorption_sea_francois.m</strong>
+                <span>Francois & Garrison (1982) Ocean Absorption Model</span>
+              </button>
             </div>
           </div>
 
@@ -1034,9 +1038,361 @@ const Pages = (() => {
     `;
   }
 
+  /* ============================================================
+     9. SOUND ABSORPTION IN SEAWATER (Francois & Garrison 1982)
+     ============================================================ */
+  function renderSoundAbsorption() {
+    return `
+      <div class="page-container">
+        <!-- Header -->
+        <div class="page-header">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+              <span class="hud-badge" style="color:var(--accent-cyan)">J. Acoust. Soc. Am. 1982</span>
+              <span class="hud-badge" style="color:var(--accent-green)">Chemical Relaxation Model</span>
+            </div>
+            <h1 class="page-title">Sound Absorption in Sea — Francois & Garrison Equation</h1>
+            <p class="page-subtitle">
+              Complete mathematical formulation, chemical relaxation decomposition (Boric Acid, $\\text{MgSO}_4$, Pure $\\text{H}_2\\text{O}$),
+              interactive parameter simulator, and Octave/MATLAB implementation based on
+              <a href="https://gorbatschow.github.io/SonarDocs/sound_absorption_sea_francois.en/" target="_blank" style="color:var(--accent-cyan);text-decoration:underline">SonarDocs Francois & Garrison Documentation</a>.
+            </p>
+          </div>
+          <div class="header-actions">
+            <button class="sonar-btn btn-primary btn-sm glow-btn" onclick="SoundAbsorption.copyMatlabCode()">
+              📋 Copy MATLAB Code
+            </button>
+            <a href="#matlab-validation" class="sonar-btn btn-secondary btn-sm">
+              ⚡ Open in MATLAB Lab &rarr;
+            </a>
+          </div>
+        </div>
+
+        <!-- Preset Ocean Profiles Selector -->
+        <div class="profile-switcher-card">
+          <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:10px">Select Oceanographic Profile Preset:</div>
+          <div class="profile-buttons-row">
+            <button class="sonar-btn profile-btn fg-preset-btn active" data-preset="surface" onclick="SoundAbsorption.setPreset('surface')">
+              <strong>Temperate Surface Waters</strong>
+              <span>T = 20°C, S = 35 PSU, D = 10m, pH = 8.1, f = 30 kHz</span>
+            </button>
+            <button class="sonar-btn profile-btn fg-preset-btn" data-preset="deep-ocean" onclick="SoundAbsorption.setPreset('deep-ocean')">
+              <strong>Abyssal Deep Ocean</strong>
+              <span>T = 4°C, S = 34.8 PSU, D = 2500m, pH = 7.8, f = 20 kHz</span>
+            </button>
+            <button class="sonar-btn profile-btn fg-preset-btn" data-preset="polar" onclick="SoundAbsorption.setPreset('polar')">
+              <strong>Polar High-Latitude</strong>
+              <span>T = 1°C, S = 33.5 PSU, D = 150m, pH = 8.0, f = 40 kHz</span>
+            </button>
+            <button class="sonar-btn profile-btn fg-preset-btn" data-preset="tropical-warm" onclick="SoundAbsorption.setPreset('tropical-warm')">
+              <strong>Tropical Warm Lagoon</strong>
+              <span>T = 28°C, S = 36.5 PSU, D = 40m, pH = 8.25, f = 50 kHz</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Telemetry HUD Summary Bar -->
+        <div class="telemetry-bar">
+          <div class="telemetry-item">
+            <span class="tel-label">Total Absorption α</span>
+            <span class="tel-val" id="fg-stat-total" style="color:#00e5ff">5.42 <span class="unit">dB/km</span></span>
+          </div>
+          <div class="telemetry-item">
+            <span class="tel-label">Boric Acid Contribution (α₁)</span>
+            <span class="tel-val" id="fg-stat-boric" style="color:#b388ff">0.82 <span class="unit">dB/km</span></span>
+          </div>
+          <div class="telemetry-item">
+            <span class="tel-label">MgSO₄ Contribution (α₂)</span>
+            <span class="tel-val" id="fg-stat-mgso4" style="color:#ffab00">3.95 <span class="unit">dB/km</span></span>
+          </div>
+          <div class="telemetry-item">
+            <span class="tel-label">Pure H₂O Viscosity (α₃)</span>
+            <span class="tel-val" id="fg-stat-h2o" style="color:#00c853">0.65 <span class="unit">dB/km</span></span>
+          </div>
+          <div class="telemetry-item">
+            <span class="tel-label">Sound Speed (C)</span>
+            <span class="tel-val" id="fg-stat-c">1515.2 <span class="unit">m/s</span></span>
+          </div>
+          <div class="telemetry-item">
+            <span class="tel-label">Relaxation Freq f₁ / f₂</span>
+            <span class="tel-val" style="font-size:12px;color:#8899aa"><span id="fg-stat-f1" style="color:#b388ff">1.02 kHz</span> / <span id="fg-stat-f2" style="color:#ffab00">88.4 kHz</span></span>
+          </div>
+        </div>
+
+        <!-- Sliders & Absorption Contribution Share -->
+        <div class="grid-2-1" style="margin-bottom:24px">
+          <!-- Environmental Input Sliders -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Oceanographic Environmental Parameters</span>
+              <span class="card-subtitle">Adjust real-time physical ocean inputs to inspect chemical relaxation response</span>
+            </div>
+            <div class="sliders-grid-6" style="grid-template-columns:repeat(auto-fit, minmax(180px, 1fr))">
+              <div class="slider-group">
+                <div class="slider-header">
+                  <span class="slider-label">Temperature (T)</span>
+                  <span class="slider-value" id="fg-temp-val">15.0 °C</span>
+                </div>
+                <input type="range" id="fg-temp-slider" min="-2" max="30" step="0.5" value="15" class="sonar-slider">
+                <span style="font-size:9.5px;color:#8899aa">-2°C to 30°C</span>
+              </div>
+
+              <div class="slider-group">
+                <div class="slider-header">
+                  <span class="slider-label">Salinity (S)</span>
+                  <span class="slider-value" id="fg-sal-val">35.0 PSU</span>
+                </div>
+                <input type="range" id="fg-sal-slider" min="0" max="40" step="0.5" value="35" class="sonar-slider">
+                <span style="font-size:9.5px;color:#8899aa">0 to 40 ppt/PSU</span>
+              </div>
+
+              <div class="slider-group">
+                <div class="slider-header">
+                  <span class="slider-label">Depth (D)</span>
+                  <span class="slider-value" id="fg-depth-val">500 m</span>
+                </div>
+                <input type="range" id="fg-depth-slider" min="0" max="5000" step="25" value="500" class="sonar-slider">
+                <span style="font-size:9.5px;color:#8899aa">0 to 5,000 m</span>
+              </div>
+
+              <div class="slider-group">
+                <div class="slider-header">
+                  <span class="slider-label">Acidity (pH)</span>
+                  <span class="slider-value" id="fg-ph-val">8.00</span>
+                </div>
+                <input type="range" id="fg-ph-slider" min="7.0" max="8.5" step="0.05" value="8.0" class="sonar-slider">
+                <span style="font-size:9.5px;color:#8899aa">7.0 to 8.5 (Boric sensitivity)</span>
+              </div>
+
+              <div class="slider-group">
+                <div class="slider-header">
+                  <span class="slider-label">Operating Frequency (f)</span>
+                  <span class="slider-value" id="fg-freq-val">25.0 kHz</span>
+                </div>
+                <input type="range" id="fg-freq-slider" min="0.1" max="150" step="0.5" value="25" class="sonar-slider">
+                <span style="font-size:9.5px;color:#8899aa">0.1 to 150 kHz</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Component Share Progress Breakdown -->
+          <div class="card" style="display:flex;flex-direction:column;justify-content:space-between">
+            <div class="card-header">
+              <span class="card-title">Absorption Mechanism Share</span>
+              <span class="card-subtitle">Contribution at active frequency</span>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:16px;padding:8px 0">
+              <div>
+                <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:11px;margin-bottom:6px">
+                  <span style="color:#b388ff">● Boric Acid B(OH)₃ (Low Freq < 1 kHz)</span>
+                  <strong id="fg-share-boric">15.1%</strong>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" id="fg-bar-boric" style="width:15.1%;background:#b388ff"></div></div>
+              </div>
+
+              <div>
+                <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:11px;margin-bottom:6px">
+                  <span style="color:#ffab00">● Magnesium Sulfate MgSO₄ (1 - 100 kHz)</span>
+                  <strong id="fg-share-mgso4">72.9%</strong>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" id="fg-bar-mgso4" style="width:72.9%;background:#ffab00"></div></div>
+              </div>
+
+              <div>
+                <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:11px;margin-bottom:6px">
+                  <span style="color:#00c853">● Pure H₂O Shear & Bulk Viscosity (> 100 kHz)</span>
+                  <strong id="fg-share-h2o">12.0%</strong>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" id="fg-bar-h2o" style="width:12.0%;background:#00c853"></div></div>
+              </div>
+            </div>
+
+            <div style="font-size:11px;color:#8899aa;line-height:1.5;background:rgba(8,12,22,0.6);padding:8px 12px;border-radius:6px;border:1px solid rgba(0,229,255,0.08)">
+              💡 <em>Note:</em> Boric acid dominates below 1 kHz; $\\text{MgSO}_4$ dominates typical sonar frequencies (1–100 kHz); pure water viscous loss dominates above 100 kHz.
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 1: Plotly Graphs (Spectral Decomposition & Depth Profile) -->
+        <div class="plot-grid-2" style="margin-bottom:24px">
+          <div class="plot-card">
+            <div class="plot-card-header">
+              <span class="plot-title">Sound Absorption Spectrum Decomposed (0.02 to 500 kHz)</span>
+              <span class="plot-meta">Log-Log Scale [dB/km]</span>
+            </div>
+            <div id="fg-spectrum-plot" class="plot-container" style="height:380px"></div>
+          </div>
+
+          <div class="plot-card">
+            <div class="plot-card-header">
+              <span class="plot-title">Depth Dependency Profile α(D) at Operating Frequency</span>
+              <span class="plot-meta">Pressure Reduction Effect P₂(D), P₃(D)</span>
+            </div>
+            <div id="fg-depth-plot" class="plot-container" style="height:380px"></div>
+          </div>
+        </div>
+
+        <!-- Section 2: Complete Mathematical Formulas & Chemical Relaxations -->
+        <div class="card" style="margin-bottom:24px">
+          <div class="card-header">
+            <span class="card-title">Mathematical Definition — Francois & Garrison (1982) Formulation</span>
+            <span class="card-subtitle">Rigorous ocean acoustics formulation including chemical relaxations and hydrostatic pressure coefficients</span>
+          </div>
+
+          <!-- Master Formula Box -->
+          <div class="formula-box" style="margin-bottom:20px;font-size:16px;padding:20px">
+            $$\\boxed{\\alpha\\left(T, S, D, f, pH\\right) = \\frac{A_1 P_1 f_1 f^2}{f_1^2 + f^2} + \\frac{A_2 P_2 f_2 f^2}{f_2^2 + f^2} + A_3 P_3 f^2 \\quad [\\text{dB/km}]}$$
+          </div>
+
+          <div class="grid-3" style="margin-bottom:16px">
+            <!-- 1. Boric Acid Card -->
+            <div class="card" style="background:rgba(8,12,22,0.85);border-left:3px solid #b388ff">
+              <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:#b388ff;margin-bottom:8px">
+                1. Boric Acid Relaxation ($f < 1\\text{ kHz}$)
+              </div>
+              <div style="font-size:13px;color:#e0e8f0;line-height:1.8">
+                $$A_1 = \\left(\\frac{8.86}{C}\\right) \\times 10^{0.78\\,pH - 5}$$
+                $$P_1 = 1$$
+                $$f_1 = 2.8\\sqrt{\\frac{S}{35}} \\times 10^{\\left(4 - \\frac{1245}{T_K}\\right)} \\quad [\\text{kHz}]$$
+              </div>
+              <div style="font-size:11px;color:#8899aa;margin-top:8px">
+                $T_K = 273.15 + T$. Extremely sensitive to seawater $pH$ and temperature.
+              </div>
+            </div>
+
+            <!-- 2. MgSO4 Card -->
+            <div class="card" style="background:rgba(8,12,22,0.85);border-left:3px solid #ffab00">
+              <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:#ffab00;margin-bottom:8px">
+                2. Magnesium Sulfate $\\text{MgSO}_4$ ($1 - 100\\text{ kHz}$)
+              </div>
+              <div style="font-size:13px;color:#e0e8f0;line-height:1.8">
+                $$A_2 = 21.44 \\left(\\frac{S}{C}\\right)(1 + 0.025\\,T)$$
+                $$P_2 = 1 - (1.37 \\times 10^{-4})D + (6.2 \\times 10^{-9})D^2$$
+                $$f_2 = \\frac{8.17 \\times 10^{\\left(8 - \\frac{1990}{T_K}\\right)}}{1 + 0.0018(S - 35)} \\quad [\\text{kHz}]$$
+              </div>
+              <div style="font-size:11px;color:#8899aa;margin-top:8px">
+                Decreases with depth $D$ due to pressure factor $P_2(D)$.
+              </div>
+            </div>
+
+            <!-- 3. Pure H2O Card -->
+            <div class="card" style="background:rgba(8,12,22,0.85);border-left:3px solid #00c853">
+              <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:#00c853;margin-bottom:8px">
+                3. Pure Water Viscosity ($f > 100\\text{ kHz}$)
+              </div>
+              <div style="font-size:12px;color:#e0e8f0;line-height:1.7">
+                $$A_3 = \\begin{cases} 
+                4.937\\times 10^{-4} - 2.590\\times 10^{-5}T + 9.11\\times 10^{-7}T^2 - 1.5\\times 10^{-8}T^3, & T \\le 20^\\circ\\text{C} \\\\[4pt]
+                3.964\\times 10^{-4} - 1.146\\times 10^{-5}T + 1.45\\times 10^{-7}T^2 - 6.5\\times 10^{-10}T^3, & T > 20^\\circ\\text{C}
+                \\end{cases}$$
+                $$P_3 = 1 - (3.83 \\times 10^{-5})D + (4.9 \\times 10^{-10})D^2$$
+              </div>
+              <div style="font-size:11px;color:#8899aa;margin-top:8px">
+                Shear and bulk viscous dissipation proportional to $f^2$.
+              </div>
+            </div>
+          </div>
+
+          <!-- Sound Speed Formula -->
+          <div class="formula-box" style="font-size:14px">
+            $$\\text{Associated Sound Velocity Formula: } C = 1412 + 3.21\\,T + 1.19\\,S + 0.0167\\,D \\quad [\\text{m/s}]$$
+          </div>
+        </div>
+
+        <!-- Section 3: Octave / MATLAB Implementation Code Box -->
+        <div class="card code-card" style="margin-bottom:24px;height:auto">
+          <div class="code-card-header">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-family:var(--font-mono);font-size:12px;color:#00e5ff;font-weight:700">sound_absorption_sea_francois.m</span>
+              <span class="code-badge">Octave / MATLAB R2026b</span>
+            </div>
+            <button class="sonar-btn btn-secondary btn-sm" onclick="SoundAbsorption.copyMatlabCode()">
+              📋 Copy Function
+            </button>
+          </div>
+          <pre class="term-body" style="background:#060911;font-size:11.5px;line-height:1.6;padding:18px;max-height:420px;overflow-y:auto"><code style="color:#d0dbe6"><span style="color:#607d8b">% =========================================================================</span>
+<span style="color:#607d8b">% SOUND_ABSORPTION_SEA_FRANCOIS</span>
+<span style="color:#607d8b">% Calculates the acoustic absorption coefficient in seawater based on the</span>
+<span style="color:#607d8b">% empirical equations published by Francois & Garrison (1982).</span>
+<span style="color:#607d8b">% =========================================================================</span>
+<span style="color:#00e5ff;font-weight:600">function</span> [alpha, Boric, MgSO4, H2O, C] = sound_absorption_sea_francois(T, S, D, f, pH)
+<span style="color:#607d8b">% Inputs:</span>
+<span style="color:#607d8b">%   T  : Temperature in degrees Celsius (-2 &lt; T &lt; 30)</span>
+<span style="color:#607d8b">%   S  : Salinity in parts per thousand / PSU (0 &lt; S &lt; 40)</span>
+<span style="color:#607d8b">%   D  : Depth in meters (0 &lt; D &lt; 10000)</span>
+<span style="color:#607d8b">%   f  : Acoustic Frequency in kHz</span>
+<span style="color:#607d8b">%   pH : Seawater acidity / potential of hydrogen (typically 7.7 - 8.3)</span>
+<span style="color:#607d8b">% Outputs:</span>
+<span style="color:#607d8b">%   alpha : Total sound absorption in seawater [dB/km]</span>
+<span style="color:#607d8b">%   Boric : Boric acid relaxation component [dB/km]</span>
+<span style="color:#607d8b">%   MgSO4 : Magnesium sulfate relaxation component [dB/km]</span>
+<span style="color:#607d8b">%   H2O   : Pure water viscous component [dB/km]</span>
+<span style="color:#607d8b">%   C     : Speed of sound [m/s]</span>
+
+T_kel = <span style="color:#ffab00">273.15</span> + T;
+
+<span style="color:#607d8b">% Sound speed</span>
+C = <span style="color:#ffab00">1412</span> + <span style="color:#ffab00">3.21</span>*T + <span style="color:#ffab00">1.19</span>*S + <span style="color:#ffab00">0.0167</span>*D;
+
+<span style="color:#607d8b">% --- 1. Boric Acid Relaxation ---</span>
+A1 = (<span style="color:#ffab00">8.86</span> ./ C) .* <span style="color:#ffab00">10</span>.^(<span style="color:#ffab00">0.78</span> .* pH - <span style="color:#ffab00">5</span>);
+P1 = <span style="color:#ffab00">1</span>;
+f1 = <span style="color:#ffab00">2.8</span> * sqrt(S ./ <span style="color:#ffab00">35</span>) .* <span style="color:#ffab00">10</span>.^(<span style="color:#ffab00">4</span> - <span style="color:#ffab00">1245</span> ./ T_kel);
+Boric = (A1 .* P1 .* f1 .* (f.^<span style="color:#ffab00">2</span>)) ./ ((f.^<span style="color:#ffab00">2</span>) + (f1.^<span style="color:#ffab00">2</span>));
+
+<span style="color:#607d8b">% --- 2. Magnesium Sulfate (MgSO4) Relaxation ---</span>
+A2 = <span style="color:#ffab00">21.44</span> * (S ./ C) .* (<span style="color:#ffab00">1</span> + <span style="color:#ffab00">0.025</span> * T);
+P2 = <span style="color:#ffab00">1</span> - (<span style="color:#ffab00">1.37e-4</span>) * D + (<span style="color:#ffab00">6.2e-9</span>) * (D.^<span style="color:#ffab00">2</span>);
+f2 = (<span style="color:#ffab00">8.17</span> * (<span style="color:#ffab00">10</span>.^(<span style="color:#ffab00">8</span> - <span style="color:#ffab00">1990</span> ./ T_kel))) ./ (<span style="color:#ffab00">1</span> + <span style="color:#ffab00">0.0018</span> * (S - <span style="color:#ffab00">35</span>));
+MgSO4 = (A2 .* P2 .* f2 .* (f.^<span style="color:#ffab00">2</span>)) ./ ((f.^<span style="color:#ffab00">2</span>) + (f2.^<span style="color:#ffab00">2</span>));
+
+<span style="color:#607d8b">% --- 3. Pure Water (H2O) Viscosity ---</span>
+<span style="color:#00e5ff;font-weight:600">if</span> T &lt;= <span style="color:#ffab00">20</span>
+    A3 = (<span style="color:#ffab00">4.937e-4</span>) - (<span style="color:#ffab00">2.590e-5</span>)*T + (<span style="color:#ffab00">9.11e-7</span>)*(T.^<span style="color:#ffab00">2</span>) - (<span style="color:#ffab00">1.5e-8</span>)*(T.^<span style="color:#ffab00">3</span>);
+<span style="color:#00e5ff;font-weight:600">else</span>
+    A3 = (<span style="color:#ffab00">3.964e-4</span>) - (<span style="color:#ffab00">1.146e-5</span>)*T + (<span style="color:#ffab00">1.45e-7</span>)*(T.^<span style="color:#ffab00">2</span>) - (<span style="color:#ffab00">6.5e-10</span>)*(T.^<span style="color:#ffab00">3</span>);
+<span style="color:#00e5ff;font-weight:600">end</span>
+P3 = <span style="color:#ffab00">1</span> - (<span style="color:#ffab00">3.83e-5</span>)*D + (<span style="color:#ffab00">4.9e-10</span>)*(D.^<span style="color:#ffab00">2</span>);
+H2O = A3 .* P3 .* (f.^<span style="color:#ffab00">2</span>);
+
+<span style="color:#607d8b">% Total Absorption</span>
+alpha = Boric + MgSO4 + H2O;
+<span style="color:#00e5ff;font-weight:600">end</span></code></pre>
+        </div>
+
+        <!-- Section 4: Scientific Literature References -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Scientific References & Provenance</span>
+          </div>
+          <ol style="margin-left:20px;font-size:12.5px;color:#a0b2c6;line-height:1.8">
+            <li>
+              <strong>Francois, R.E.; Garrison, G.R.</strong> (1982).
+              <em>"Sound absorption based on ocean measurements: Part I: Pure water and magnesium sulfate contributions"</em>.
+              Journal of the Acoustical Society of America, 72(3), pp. 896–907.
+              <a href="https://doi.org/10.1121/1.388170" target="_blank" style="color:var(--accent-cyan)">doi:10.1121/1.388170</a>
+            </li>
+            <li>
+              <strong>Francois, R.E.; Garrison, G.R.</strong> (1982).
+              <em>"Sound absorption based on ocean measurements. Part II: Boric acid contribution and equation for total absorption"</em>.
+              Journal of the Acoustical Society of America, 72(6), pp. 1879–1890.
+              <a href="https://doi.org/10.1121/1.388673" target="_blank" style="color:var(--accent-cyan)">doi:10.1121/1.388673</a>
+            </li>
+            <li>
+              <strong>SonarDocs Online Reference:</strong>
+              <a href="https://gorbatschow.github.io/SonarDocs/sound_absorption_sea_francois.en/" target="_blank" style="color:var(--accent-cyan);text-decoration:underline">https://gorbatschow.github.io/SonarDocs/sound_absorption_sea_francois.en/</a>
+            </li>
+          </ol>
+        </div>
+      </div>
+    `;
+  }
+
   return {
     renderLanding,
     renderUWAcoustics,
+    renderSoundAbsorption,
     renderMissionControl,
     renderLiveSonar,
     renderFPGALab,
