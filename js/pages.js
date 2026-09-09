@@ -1,122 +1,226 @@
 /**
  * SONARIS — Page Templates & Layouts
- * Spacious, clean, friendly, futuristic dark aesthetic with neon accents.
+ * Spacious, realistic, friendly, futuristic dark aesthetic with neon accents.
  */
 
 const Pages = (() => {
   'use strict';
 
   /* ============================================================
-     1. LANDING / HOME PAGE (Spacious, Breathable, Innovative)
+     1. LANDING / HOME PAGE (Full-Width, Realistic, Spacious)
      ============================================================ */
   function renderLanding() {
     return `
       <div class="landing-container">
-        <!-- Interactive Acoustic Hero Canvas Background -->
-        <div class="hero-canvas-wrap">
-          <canvas id="hero-acoustic-canvas" width="1200" height="420"></canvas>
+        <!-- Top Status Bar & Ocean Telemetry Banner -->
+        <div class="panoramic-status-bar">
+          <div class="status-col">
+            <span class="p-dot live"></span>
+            <span class="p-label">ACOUSTIC STATE:</span>
+            <span class="p-val" style="color:#00e5ff">ACTIVE BROADBAND SCANNING</span>
+          </div>
+          <div class="status-col">
+            <span class="p-label">TRANSDUCER:</span>
+            <span class="p-val">Artix-7 100MHz PZT Array (1–5 MHz Agile)</span>
+          </div>
+          <div class="status-col">
+            <span class="p-label">LOCATION:</span>
+            <span class="p-val">Santa Barbara Basin (34°12'N, 119°28'W)</span>
+          </div>
+          <div class="status-col">
+            <span class="p-label">SOUND VELOCITY:</span>
+            <span class="p-val" id="home-stat-c-top" style="color:#00c853">1485.4 m/s (Mackenzie 1981)</span>
+          </div>
+          <div class="status-col">
+            <span class="p-label">PING RATE:</span>
+            <span class="p-val" style="color:#ffab00">12.5 Hz | P_tx = 30 dBm</span>
+          </div>
         </div>
 
-        <!-- Hero Section -->
-        <section class="hero-section">
-          <div class="hero-badge animate-pulse">
-            <span class="pulse-dot"></span>
-            <span>SONARIS v2.4 • REAL-TIME ADAPTIVE FPGA DSP & ACOUSTIC PLATFORM</span>
+        <!-- Main Panoramic Hero Command Grid (3 Balanced Columns) -->
+        <div class="hero-panoramic-grid">
+          <!-- Left Column: Command, Mission Brief & Live Ocean Physics HUD -->
+          <div class="hero-col-card left-col">
+            <div class="hero-badge">
+              <span class="pulse-dot"></span>
+              <span>SYSTEM ONLINE • UNESCO MACKENZIE DSP RUNNING</span>
+            </div>
+
+            <h1 class="hero-title">
+              Adaptive Underwater <br><span class="gradient-text">Signal Intelligence</span>
+            </h1>
+
+            <p class="hero-subtitle">
+              High-performance marine acoustics mission control combining empirical ocean sound velocity profiles (Medwin & Mackenzie),
+              Snell's acoustic ray tracing, and FPGA prototype switch-selectable MHz LFM chirp pulse compression.
+            </p>
+
+            <div class="hero-actions">
+              <a href="#mission-control" class="sonar-btn btn-primary btn-md glow-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/></svg>
+                Launch Mission Control
+              </a>
+              <a href="#uw-acoustics" class="sonar-btn btn-secondary btn-md">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                Underwater Acoustics
+              </a>
+            </div>
+
+            <!-- Live Oceanographic Physics HUD Matrix -->
+            <div class="hud-matrix-card">
+              <div class="hud-matrix-header">
+                <span>Oceanographic Physics Matrix (Mackenzie 1981 / Medwin)</span>
+                <span class="hud-badge">CALIBRATED</span>
+              </div>
+              <div class="hud-matrix-grid">
+                <div class="matrix-item">
+                  <span class="m-lbl">Sound Speed (c)</span>
+                  <span class="m-val" id="home-stat-c">1485.4 <span class="unit">m/s</span></span>
+                </div>
+                <div class="matrix-item">
+                  <span class="m-lbl">Acoustic Impedance (Z)</span>
+                  <span class="m-val" id="home-stat-z">1.533 <span class="unit">MRayl</span></span>
+                </div>
+                <div class="matrix-item">
+                  <span class="m-lbl">Seawater Density (ρ)</span>
+                  <span class="m-val">1032.2 <span class="unit">kg/m³</span></span>
+                </div>
+                <div class="matrix-item">
+                  <span class="m-lbl">Bulk Modulus (K)</span>
+                  <span class="m-val">2.28 <span class="unit">GPa</span></span>
+                </div>
+                <div class="matrix-item">
+                  <span class="m-lbl">Ainslie-McColm α</span>
+                  <span class="m-val" id="home-stat-a">0.32 <span class="unit">dB/km</span></span>
+                </div>
+                <div class="matrix-item">
+                  <span class="m-lbl">SOFAR Channel Axis</span>
+                  <span class="m-val" id="home-stat-sofar">950 <span class="unit">m</span></span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <h1 class="hero-title">
-            Adaptive Underwater <br><span class="gradient-text">Signal Intelligence</span>
-          </h1>
-
-          <p class="hero-subtitle">
-            Next-generation marine acoustics and FPGA mission control combining Snell's law acoustic ray tracing,
-            empirical sound velocity profiles, and prototype switch-selectable LFM chirp generation.
-          </p>
-
-          <div class="hero-actions">
-            <a href="#mission-control" class="sonar-btn btn-primary btn-lg glow-btn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/></svg>
-              Launch Mission Control
-            </a>
-            <a href="#uw-acoustics" class="sonar-btn btn-secondary btn-lg">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
-              Underwater Acoustics Theory
-            </a>
-            <a href="#live-sonar" class="sonar-btn btn-ghost btn-lg">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              FPGA Live Sonar
-            </a>
-          </div>
-        </section>
-
-        <!-- Live Sound Speed & Acoustic Telemetry HUD Widget -->
-        <section class="home-hud-card">
-          <div class="hud-header">
-            <div style="display:flex;align-items:center;gap:12px">
-              <span class="hud-dot"></span>
-              <h3 style="margin:0;font-size:17px;color:#fff;font-weight:700">Live Mackenzie (1981) Acoustic Profile Calculator</h3>
+          <!-- Center Column: Tactical PPI Radar & Acoustic Oscillogram Monitor -->
+          <div class="hero-col-card center-col">
+            <div class="radar-card-header">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span class="radar-live-dot"></span>
+                <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:#fff">TACTICAL PPI RADAR & HYDROPHONE OSCILLOGRAM</span>
+              </div>
+              <span class="hud-badge" style="color:var(--accent-green)">3 TARGETS TRACKED</span>
             </div>
-            <span class="hud-badge">UNESCO Standard</span>
-          </div>
 
-          <div class="hud-body">
-            <div class="hud-metric">
-              <span class="hud-metric-label">Sound Speed (c)</span>
-              <span class="hud-metric-val" id="home-stat-c">1482.3 <span class="unit">m/s</span></span>
+            <div class="radar-canvas-container">
+              <canvas id="home-radar-monitor" width="420" height="280"></canvas>
             </div>
-            <div class="hud-metric">
-              <span class="hud-metric-label">Acoustic Impedance (Z)</span>
-              <span class="hud-metric-val" id="home-stat-z">1.524 <span class="unit">MRayl</span></span>
-            </div>
-            <div class="hud-metric">
-              <span class="hud-metric-label">Absorption @ 30kHz</span>
-              <span class="hud-metric-val" id="home-stat-a">5.42 <span class="unit">dB/km</span></span>
-            </div>
-            <div class="hud-metric">
-              <span class="hud-metric-label">SOFAR Channel Depth</span>
-              <span class="hud-metric-val" id="home-stat-sofar">950 <span class="unit">m</span></span>
+
+            <div class="radar-telemetry-row">
+              <div><span class="r-lbl">BEARING:</span> <strong style="color:#00e5ff">142.8° SE</strong></div>
+              <div><span class="r-lbl">TARGET DIST:</span> <strong style="color:#00c853">4,850 m</strong></div>
+              <div><span class="r-lbl">CARRIER:</span> <strong style="color:#ffab00">1–5 MHz</strong></div>
+              <div><span class="r-lbl">MF GAIN:</span> <strong style="color:#00e5ff">+16.0 dB</strong></div>
             </div>
           </div>
-        </section>
 
-        <!-- Core Feature Cards Grid -->
-        <section class="features-grid">
+          <!-- Right Column: FPGA Adaptive Waveform Controller & Target Tracker -->
+          <div class="hero-col-card right-col">
+            <div class="radar-card-header">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span class="pulse-dot" style="background:#ffab00;box-shadow:0 0 8px #ffab00"></span>
+                <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:#fff">FPGA ADAPTIVE CONTROLLER TELEMETRY</span>
+              </div>
+              <span class="hud-badge" style="color:var(--accent-cyan)">SW[1:0]=00</span>
+            </div>
+
+            <!-- Active FPGA Mode Card -->
+            <div class="mode-summary-box">
+              <div class="mode-title-row">
+                <strong style="color:#00e5ff;font-size:13px">Condition 1: Deep Ocean SOFAR</strong>
+                <span class="badge-sm" style="background:rgba(0,229,255,0.15);color:#00e5ff">1–5 MHz (10 µs)</span>
+              </div>
+              <div class="mode-specs-grid">
+                <div><span class="s-k">Sweep Bandwidth:</span> <span class="s-v">4.0 MHz</span></div>
+                <div><span class="s-k">Chirp Slope (k):</span> <span class="s-v">400 GHz/s</span></div>
+                <div><span class="s-k">Time-Bandwidth (BT):</span> <span class="s-v" style="color:#ffab00">40.0</span></div>
+                <div><span class="s-k">SNR Processing Gain:</span> <span class="s-v" style="color:#00c853">+16.02 dB</span></div>
+              </div>
+            </div>
+
+            <!-- Tracked Target Contact Table -->
+            <div style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:#8899aa;margin-bottom:6px">
+              ACQUIRED UNDERWATER CONTACTS:
+            </div>
+            <div class="target-list-compact">
+              <div class="tgt-row">
+                <span class="tgt-id" style="color:#ff1744">● TGT-1</span>
+                <span>4,850 m</span>
+                <span>142.8° SE</span>
+                <span style="color:#00c853">-3.2 kt (Closing)</span>
+                <span class="hud-badge" style="color:#00c853">98% CONF</span>
+              </div>
+              <div class="tgt-row">
+                <span class="tgt-id" style="color:#ffab00">● TGT-2</span>
+                <span>2,720 m</span>
+                <span>045.2° NE</span>
+                <span style="color:#8899aa">0.0 kt (Seamount)</span>
+                <span class="hud-badge" style="color:#ffab00">89% CONF</span>
+              </div>
+              <div class="tgt-row">
+                <span class="tgt-id" style="color:#00e5ff">● TGT-3</span>
+                <span>6,100 m</span>
+                <span>285.0° WNW</span>
+                <span style="color:#00c853">+1.4 kt (Opening)</span>
+                <span class="hud-badge" style="color:#00e5ff">94% CONF</span>
+              </div>
+            </div>
+
+            <div class="quick-launch-links">
+              <a href="#live-sonar" class="q-link">⚡ FPGA Live Sonar &rarr;</a>
+              <a href="#matlab-validation" class="q-link">📊 MATLAB Simulation &rarr;</a>
+              <a href="#experiments" class="q-link">📥 Past Trials Dataset &rarr;</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: 4 Full-Width Operational Module Gateways -->
+        <div class="features-grid">
           <div class="feature-card" onclick="window.location.hash='uw-acoustics'">
             <div class="feature-icon" style="color:var(--accent-cyan);background:rgba(0,229,255,0.1)">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
             </div>
             <div class="feature-title">Underwater Acoustics</div>
-            <p class="feature-desc">Comprehensive ocean sound propagation: Medwin & Mackenzie SVPs, Snell's law acoustic ray tracing, shadow zones, and Wenz ambient noise.</p>
+            <p class="feature-desc">Empirical sound propagation theory (arc.id.au): Medwin & Mackenzie SVPs, Snell's law ray tracing, thermocline refraction, and Wenz ambient noise curves.</p>
             <span class="feature-link">Explore Acoustics &rarr;</span>
           </div>
 
           <div class="feature-card" onclick="window.location.hash='mission-control'">
             <div class="feature-icon" style="color:var(--accent-teal);background:rgba(0,191,165,0.1)">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/></svg>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/></svg>
             </div>
             <div class="feature-title">Adaptive Mission Control</div>
-            <p class="feature-desc">Interactive PPI radar scan tracking 3 underwater contacts, 4 condition presets (C1–C4), and synchronized environmental sliders.</p>
+            <p class="feature-desc">Interactive PPI radar scan tracking 3 underwater contacts, C1–C4 condition presets with detailed oceanographic definitions, and synchronized sliders.</p>
             <span class="feature-link">Open Mission Control &rarr;</span>
           </div>
 
           <div class="feature-card" onclick="window.location.hash='live-sonar'">
             <div class="feature-icon" style="color:var(--accent-amber);background:rgba(255,171,0,0.1)">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             </div>
             <div class="feature-title">FPGA Live Sonar Lab</div>
-            <p class="feature-desc">Prototype switch emulator for C1 (1–5 MHz in 10 µs), C2 (1–4 MHz in 12 µs), C3 (1–3 MHz in 8 µs), and C4 (1–2 MHz in 6 µs).</p>
+            <p class="feature-desc">Prototype DIP switch emulator for C1 (1–5 MHz in 10 µs), C2 (1–4 MHz in 12 µs), C3 (1–3 MHz in 8 µs), and C4 (1–2 MHz in 6 µs) with pulse compression.</p>
             <span class="feature-link">Inspect Live Sonar &rarr;</span>
           </div>
 
           <div class="feature-card" onclick="window.location.hash='matlab-validation'">
             <div class="feature-icon" style="color:var(--accent-blue);background:rgba(41,121,255,0.1)">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
             </div>
             <div class="feature-title">MATLAB & Simulink Lab</div>
-            <p class="feature-desc">Upload and run MATLAB (.m) scripts and Simulink (.slx) models, syntax-highlighted code viewer, and fixed-point validation.</p>
+            <p class="feature-desc">Upload custom MATLAB (.m) scripts and Simulink (.slx) models, syntax-highlighted IDE, execution console, and 16-bit Q1.15 fixed-point validation.</p>
             <span class="feature-link">Run Simulation &rarr;</span>
           </div>
-        </section>
+        </div>
       </div>
     `;
   }
@@ -266,7 +370,7 @@ const Pages = (() => {
 
         <!-- Formula Callout -->
         <div class="formula-box" style="margin-bottom:24px">
-          $$C(T, D, S) = 1449.2 + 4.6\,T - 0.055\,T^2 + 0.00029\,T^3 + (1.34 - 0.010\,T)(S - 35) + 0.016\,D$$
+          $$C(T, D, S) = 1449.2 + 4.6\\,T - 0.055\\,T^2 + 0.00029\\,T^3 + (1.34 - 0.010\\,T)(S - 35) + 0.016\\,D$$
         </div>
 
         <!-- Section 2: Snell's Law Ray Tracing -->
@@ -743,8 +847,8 @@ const Pages = (() => {
             <p class="page-subtitle">Upload MATLAB (.m) scripts and Simulink (.slx/.mdl) acoustic models to execute simulations and validate against FPGA bitstream data.</p>
           </div>
           <div class="header-actions">
-            <button class="sonar-btn btn-primary btn-sm" id="run-matlab-btn">
-              ▶ Run MATLAB / Simulink Simulation
+            <button class="sonar-btn btn-primary btn-sm glow-btn" id="run-matlab-btn" onclick="MATLABValidation.runSimulation()">
+              ▶ Execute MATLAB / Simulink Simulation
             </button>
           </div>
         </div>
@@ -773,32 +877,41 @@ const Pages = (() => {
           </div>
 
           <!-- File Upload Drop Zone -->
-          <div class="card" id="matlab-upload-area" style="border:2px dashed rgba(0,229,255,0.3);text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div class="card" id="matlab-upload-area" style="border:2px dashed rgba(0,229,255,0.3);text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px">
             <input type="file" id="matlab-file-input" accept=".m,.slx,.mdl,.mat,.csv" style="display:none">
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2" style="margin-bottom:8px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <div style="font-weight:600;color:#fff;margin-bottom:4px">Upload Custom MATLAB / Simulink File</div>
-            <div style="font-size:11px;color:var(--text-muted)">Accepts <code>.m</code>, <code>.slx</code>, <code>.mdl</code>, or <code>.mat</code></div>
+            <div style="font-weight:600;color:#fff;margin-bottom:4px">Upload Custom MATLAB (.m) or Simulink File</div>
+            <div style="font-size:11px;color:var(--text-muted)">Drag & drop or click to browse (Accepts <code>.m</code>, <code>.slx</code>, <code>.mdl</code>)</div>
+            <div id="matlab-upload-status" style="width:100%"></div>
           </div>
         </div>
 
         <!-- Code Viewer & Terminal Output -->
         <div class="grid-2" style="margin-bottom:24px">
-          <!-- Code Inspector -->
+          <!-- Code Inspector / IDE -->
           <div class="card code-card">
             <div class="code-card-header">
-              <span id="matlab-file-title" style="font-family:var(--font-mono);font-size:12px;color:#00e5ff">lfm_matched_filter.m</span>
-              <span class="code-badge">MATLAB R2026b</span>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span id="matlab-file-title" style="font-family:var(--font-mono);font-size:12px;color:#00e5ff;font-weight:700">lfm_matched_filter.m</span>
+                <span class="code-badge">MATLAB R2026b IDE</span>
+              </div>
+              <button class="sonar-btn btn-primary btn-sm" id="editor-run-btn" onclick="MATLABValidation.runSimulation()">
+                ▶ Execute Code
+              </button>
             </div>
-            <div id="matlab-code-viewer" class="code-viewer-body"></div>
+            <div class="ide-editor-container">
+              <div id="matlab-line-numbers" class="ide-line-numbers"></div>
+              <textarea id="matlab-code-editor" class="ide-code-textarea" spellcheck="false" placeholder="Write or paste your MATLAB code here..."></textarea>
+            </div>
           </div>
 
           <!-- Terminal Output -->
           <div class="card term-card">
             <div class="code-card-header">
               <span style="font-family:var(--font-mono);font-size:12px;color:#00c853">Execution Console >></span>
-              <span class="code-badge" style="background:rgba(0,200,83,0.15);color:#00c853">ONLINE</span>
+              <span class="code-badge" style="background:rgba(0,200,83,0.15);color:#00c853">ENGINE ONLINE</span>
             </div>
-            <pre id="matlab-terminal-output" class="term-body">>> Ready to execute. Click "Run MATLAB / Simulink Simulation" above.</pre>
+            <pre id="matlab-terminal-output" class="term-body">>> Ready to execute. Click "▶ Execute MATLAB / Simulink Simulation" above or upload a .m file.</pre>
           </div>
         </div>
 
@@ -962,4 +1075,3 @@ const SimulationLab = (() => {
 
   return { init };
 })();
-

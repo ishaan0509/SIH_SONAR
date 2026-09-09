@@ -174,6 +174,93 @@ const App = (() => {
       });
 
       t++;
+
+      // Animate Home Radar Monitor Canvas if present
+      const radarCanvas = document.getElementById('home-radar-monitor');
+      if (radarCanvas) {
+        const rctx = radarCanvas.getContext('2d');
+        const rw = radarCanvas.width;
+        const rh = radarCanvas.height;
+        rctx.clearRect(0, 0, rw, rh);
+
+        const cx = rw / 2;
+        const cy = rh / 2 - 15;
+        const r = Math.min(cx, cy) - 10;
+
+        // Draw concentric range rings
+        rctx.strokeStyle = 'rgba(0, 229, 255, 0.15)';
+        rctx.lineWidth = 1;
+        for (let i = 1; i <= 3; i++) {
+          rctx.beginPath();
+          rctx.arc(cx, cy, (r / 3) * i, 0, Math.PI * 2);
+          rctx.stroke();
+        }
+
+        // Crosshairs
+        rctx.beginPath();
+        rctx.moveTo(cx - r, cy); rctx.lineTo(cx + r, cy);
+        rctx.moveTo(cx, cy - r); rctx.lineTo(cx, cy + r);
+        rctx.stroke();
+
+        // Sweep line & Beam
+        const sweepAngle = (t * 0.035) % (Math.PI * 2);
+        rctx.save();
+        rctx.beginPath();
+        rctx.moveTo(cx, cy);
+        rctx.arc(cx, cy, r, sweepAngle - 0.4, sweepAngle);
+        rctx.closePath();
+        rctx.fillStyle = 'rgba(0, 229, 255, 0.1)';
+        rctx.fill();
+
+        rctx.beginPath();
+        rctx.moveTo(cx, cy);
+        rctx.lineTo(cx + r * Math.cos(sweepAngle), cy + r * Math.sin(sweepAngle));
+        rctx.strokeStyle = '#00e5ff';
+        rctx.lineWidth = 2;
+        rctx.stroke();
+        rctx.restore();
+
+        // Tracked Targets
+        const tgts = [
+          { a: 0.8, d: 0.65, id: 'TGT-1' },
+          { a: 2.7, d: 0.42, id: 'TGT-2' },
+          { a: 4.8, d: 0.80, id: 'TGT-3' }
+        ];
+
+        tgts.forEach(tg => {
+          const tx = cx + tg.d * r * Math.cos(tg.a);
+          const ty = cy + tg.d * r * Math.sin(tg.a);
+          const diff = Math.abs(((sweepAngle - tg.a + Math.PI * 3) % (Math.PI * 2)) - Math.PI);
+          const alpha = diff < 0.5 ? 1.0 : Math.max(0.2, 1.0 - diff / 1.5);
+
+          rctx.fillStyle = `rgba(255, 23, 68, ${alpha})`;
+          rctx.beginPath();
+          rctx.arc(tx, ty, 4, 0, Math.PI * 2);
+          rctx.fill();
+
+          rctx.strokeStyle = `rgba(255, 23, 68, ${alpha * 0.6})`;
+          rctx.beginPath();
+          rctx.arc(tx, ty, 7, 0, Math.PI * 2);
+          rctx.stroke();
+
+          rctx.fillStyle = `rgba(224, 232, 240, ${alpha})`;
+          rctx.font = '9px JetBrains Mono, monospace';
+          rctx.fillText(tg.id, tx + 8, ty - 2);
+        });
+
+        // Live Oscillogram Line at bottom of monitor
+        rctx.strokeStyle = 'rgba(0, 200, 83, 0.75)';
+        rctx.lineWidth = 1.5;
+        rctx.beginPath();
+        const baseOy = rh - 20;
+        for (let ox = 10; ox < rw - 10; ox += 4) {
+          const oy = baseOy + Math.sin(ox * 0.08 + t * 0.15) * 8 * Math.sin(ox * 0.02);
+          if (ox === 10) rctx.moveTo(ox, oy);
+          else rctx.lineTo(ox, oy);
+        }
+        rctx.stroke();
+      }
+
       heroCanvasAnimId = requestAnimationFrame(renderCanvas);
     }
 
