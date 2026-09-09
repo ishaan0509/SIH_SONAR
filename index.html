@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SONARIS — Adaptive Underwater Signal Intelligence Platform. Real-time FPGA DSP, acoustic propagation models, and autonomous waveform control.">
+  <meta name="keywords" content="SONARIS, underwater acoustics, sonar, FPGA, DDS, sound propagation, ray tracing, LFM chirp">
+  <meta name="author" content="SONARIS Team">
+  <meta name="theme-color" content="#0a0e1a">
+  <title>SONARIS — Adaptive Underwater Signal Intelligence</title>
+
+  <!-- Favicons -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◈</text></svg>">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/components.css">
+  <link rel="stylesheet" href="styles/animations.css">
+  <link rel="stylesheet" href="styles/pages.css">
+
+  <!-- Plotly.js -->
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+  <!-- MathJax for rendering acoustic physics formulas -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- Firebase (v9 compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <!-- Skip to content -->
+  <a href="#app" class="skip-link">Skip to main content</a>
+
+  <!-- Sonar Grid Background -->
+  <div class="sonar-grid-bg" aria-hidden="true"></div>
+
+  <!-- Mobile Menu Button -->
+  <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle navigation">☰</button>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <div class="app-shell">
+    <!-- ============================================================
+         SIDEBAR NAVIGATION
+         ============================================================ -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+      <div class="sidebar-header">
+        <a href="#home" class="sidebar-logo" aria-label="SONARIS Home">
+          <div class="logo-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0a0e1a" stroke-width="2.5" stroke-linecap="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M7.5 7.5a6.36 6.36 0 0 1 9 0"/>
+              <path d="M5 5a10 10 0 0 1 14 0"/>
+              <path d="M7.5 16.5a6.36 6.36 0 0 0 9 0"/>
+              <path d="M5 19a10 10 0 0 0 14 0"/>
+            </svg>
+          </div>
+          <div>
+            <span class="logo-text">SONARIS</span>
+            <span class="logo-sub">Signal Intelligence</span>
+          </div>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Main</div>
+        <a class="nav-item active" data-page="home" href="#home" tabindex="0">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Home Dashboard</span>
+        </a>
+
+        <a class="nav-item" data-page="uw-acoustics" href="#uw-acoustics" tabindex="0">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          <span>Underwater Acoustics</span>
+        </a>
+
+        <a class="nav-item" data-page="mission-control" href="#mission-control" tabindex="0">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+          <span>Mission Control</span>
+        </a>
+
+        <div class="nav-section-label">Signal Processing</div>
+        <a class="nav-item" data-page="live-sonar" href="#live-sonar" tabindex="0">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span>Live Sonar</span>
+        </a>
+        <a class="nav-item" data-page="simulation-lab" href="#simulation-lab" tabindex="0">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2v7.527a2 2 0 01-.211.896L4.72 20.55a1 1 0 00.9 1.45h12.76a1 1 0 00.9-1.45l-5.069-10.127A2 2 0 0114 9.527V2"/><line x1="8.5" y1="2" x2="15.5" y2="2"/></svg>
+          <span>Simulation Lab</span>
+        </a>
+
+        <div class="nav-section-label">Hardware & Validation</div>
+        <a class="nav-item" data-page="fpga-lab" href="#fpga-lab" tabindex="0">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="2" x2="9" y2="4"/><line x1="15" y1="2" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="22"/><line x1="15" y1="20" x2="15" y2="22"/><line x1="2" y1="9" x2="4" y2="9"/><line x1="2" y1="15" x2="4" y2="15"/><line x1="20" y1="9" x2="22" y2="9"/><line x1="20" y1="15" x2="22" y2="15"/></svg>
+          <span>FPGA Lab</span>
+        </a>
+        <a class="nav-item" data-page="matlab-validation" href="#matlab-validation" tabindex="0">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          <span>MATLAB & Simulink Lab</span>
+        </a>
+        <a class="nav-item" data-page="experiments" href="#experiments" tabindex="0">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <span>Past Experiments</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer" id="auth-area">
+        <button class="sonar-btn btn-secondary btn-sm" onclick="FirebaseAuth.signInWithGoogle()" style="width:100%">
+          Sign In
+        </button>
+      </div>
+    </aside>
+
+    <!-- ============================================================
+         MAIN CONTENT AREA
+         ============================================================ -->
+    <main class="main-content" id="main-content" role="main">
+      <div class="page-container" id="app">
+        <!-- Pages rendered dynamically by App router -->
+        <div style="display:flex;align-items:center;justify-content:center;min-height:80vh">
+          <div class="spinner spinner-lg"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- ============================================================
+       SCRIPTS (order matters)
+       ============================================================ -->
+  <script src="firebase-config.js"></script>
+  <script src="js/sonar-engine.js"></script>
+  <script src="js/plots.js"></script>
+  <script src="js/signal-fingerprint.js"></script>
+  <script src="js/firebase-auth.js"></script>
+  <script src="js/pages.js"></script>
+  <script src="js/uw-acoustics.js"></script>
+  <script src="js/mission-control.js"></script>
+  <script src="js/live-sonar.js"></script>
+  <script src="js/fpga-lab.js"></script>
+  <script src="js/matlab-validation.js"></script>
+  <script src="js/experiments.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
